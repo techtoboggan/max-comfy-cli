@@ -1,0 +1,12 @@
+description = "SDXL image-to-image. The input_image must already exist in your ComfyUI/input/ directory."
+required = ["prompt", "checkpoint", "input_image"]
+
+[defaults]
+negative_prompt = "blurry, low quality, distorted"
+denoise = 0.55
+steps = 30
+cfg = 6.5
+sampler = "dpmpp_2m_sde"
+scheduler = "karras"
+seed = 0
+output_prefix = "img2img"

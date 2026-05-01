@@ -1,0 +1,25 @@
+{
+  "workflow": "video-postprocess",
+  "output_dir": "./output/post",
+  "jobs": [
+    {
+      "id": "smooth_and_sharp",
+      "input": "/absolute/path/to/raw_video.webp",
+      "transcode": true,
+      "interpolate_to_fps": 60,
+      "upscale": 2.0,
+      "sharpen": 0.8,
+      "output_filename": "raw_video_60fps_2x_sharp.mp4"
+    },
+    {
+      "id": "stitch_two",
+      "input": "/absolute/path/to/clip_a.mp4",
+      "extra_inputs": ["/absolute/path/to/clip_b.mp4"],
+      "stitch": true,
+      "drop_first_frame": true,
+      "fps": 24,
+      "crossfade_frames": 8,
+      "output_filename": "joined.mp4"
+    }
+  ]
+}

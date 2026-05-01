@@ -1,0 +1,15 @@
+{
+  "workflow": "reactor-face-swap",
+  "output_dir": "./output/reactor",
+  "jobs": [
+    {
+      "id": "swap_demo",
+      "input_video": "/absolute/path/to/source_video.mp4",
+      "reference_face": "/absolute/path/to/face.png",
+      "restore_face": true,
+      "codeformer_weight": 0.6,
+      "fps": 24,
+      "output_filename": "swapped.mp4"
+    }
+  ]
+}

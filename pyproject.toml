@@ -1,0 +1,61 @@
+[build-system]
+requires = ["hatchling>=1.21"]
+build-backend = "hatchling.build"
+
+[project]
+name = "max-comfy-cli"
+version = "0.2.0"
+description = "Generic CLI for selecting, parameterizing, and batch-running ComfyUI workflows. First-class video chaining, ffmpeg post-processing, and ReActor face-swap built in."
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.10"
+authors = [{ name = "techtoboggan" }]
+keywords = ["comfyui", "cli", "stable-diffusion", "workflow", "automation", "batch"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Multimedia :: Graphics",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+dependencies = [
+    "click>=8.1",
+    "requests>=2.31",
+    "tomli>=2.0; python_version<'3.11'",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "ruff>=0.6",
+]
+
+[project.scripts]
+max-comfy = "max_comfy.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/techtoboggan/max-comfy-cli"
+Repository = "https://github.com/techtoboggan/max-comfy-cli"
+Issues = "https://github.com/techtoboggan/max-comfy-cli/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/max_comfy"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM"]
+ignore = ["E501"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"

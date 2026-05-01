@@ -1,0 +1,52 @@
+# max-comfy-cli configuration.
+#
+# Place this file at one of:
+#   - /path/of/your/choice (then pass --config /path/...)
+#   - ./max-comfy.toml in your working directory (auto-loaded)
+#   - ~/.config/max-comfy/config.toml (auto-loaded for the current user)
+#
+# All keys are optional. Any key may be overridden via CLI flags or by a
+# `config = { ... }` block in a jobs file.
+
+# --- ComfyUI server connection -------------------------------------------
+comfyui_host = "127.0.0.1"
+comfyui_port = 8188
+
+# Set this if you want max-comfy to spawn ComfyUI for you when you run a
+# command. Leave unset if you'll start ComfyUI yourself (recommended for
+# long-running setups). The path must contain a `main.py`.
+# comfyui_path = "~/ComfyUI"
+
+# Python interpreter to use when spawning ComfyUI. Defaults to the one running
+# max-comfy itself.
+# python_exe = "/opt/comfyui-venv/bin/python"
+
+# Extra args appended to the `python main.py ...` invocation.
+# server_extra_args = ["--lowvram", "--use-pytorch-cross-attention"]
+
+# Seconds to wait for the server to come up after `start`.
+server_start_timeout = 90.0
+
+# --- I/O -----------------------------------------------------------------
+output_dir = "./output"
+# input_dir = "~/ComfyUI/input"  # for staging files between phases
+
+# --- Workflow discovery --------------------------------------------------
+# Additional directories scanned for *.json (template) and *.py (plugin) files.
+# In addition to these, max-comfy always searches:
+#   $MAX_COMFY_WORKFLOWS  (env var, optional)
+#   ~/.config/max-comfy/workflows/
+#   ./workflows/
+workflow_dirs = ["./examples/workflows"]
+
+# Importable Python modules whose import side-effects register workflows.
+# workflow_modules = ["my_company.workflows"]
+
+# --- Polling -------------------------------------------------------------
+poll_interval = 1.0           # seconds between /history checks
+completion_timeout = 7200.0   # 2 hours; raise for very long video jobs
+
+# --- Defaults applied to every job's params ------------------------------
+[defaults]
+# checkpoint = "sd_xl_base_1.0.safetensors"
+# negative_prompt = "blurry, low quality, distorted"

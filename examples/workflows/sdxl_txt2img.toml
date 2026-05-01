@@ -1,0 +1,14 @@
+description = "Standard SDXL text-to-image. Edit the checkpoint to match a model in your ComfyUI/models/checkpoints/ folder."
+required = ["prompt", "checkpoint"]
+
+[defaults]
+negative_prompt = "blurry, low quality, distorted"
+width = 1024
+height = 1024
+batch_size = 1
+steps = 30
+cfg = 6.5
+sampler = "dpmpp_2m_sde"
+scheduler = "karras"
+seed = 0
+output_prefix = "sdxl"

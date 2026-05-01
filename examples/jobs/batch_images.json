@@ -1,0 +1,38 @@
+{
+  "workflow": "sdxl_txt2img",
+  "output_dir": "./output/batch_images",
+  "defaults": {
+    "checkpoint": "sd_xl_base_1.0.safetensors",
+    "steps": 30,
+    "cfg": 6.5,
+    "width": 1024,
+    "height": 1024,
+    "negative_prompt": "blurry, low quality, distorted, watermark"
+  },
+  "jobs": [
+    {
+      "id": "01_sunset",
+      "prompt": "a serene sunset over mountains, photorealistic, golden hour",
+      "seed": 42
+    },
+    {
+      "id": "02_forest",
+      "prompt": "a misty forest with sunbeams, dramatic, cinematic",
+      "seed": 100,
+      "steps": 40
+    },
+    {
+      "id": "03_cyberpunk",
+      "prompt": "cyberpunk samurai in neon-lit alley, rain, atmospheric",
+      "seed": 7,
+      "cfg": 7.5
+    },
+    {
+      "id": "04_ocean",
+      "workflow": "sdxl-with-loras",
+      "prompt": "underwater coral reef with tropical fish",
+      "seed": 256,
+      "loras": []
+    }
+  ]
+}

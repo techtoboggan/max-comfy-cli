@@ -1,0 +1,29 @@
+{
+  "workflow": "video-chain",
+  "output_dir": "./output/chained",
+  "defaults": {
+    "segment_workflow": "svd_segment",
+    "checkpoint": "svd_xt.safetensors",
+    "fps": 24,
+    "width": 1024,
+    "height": 576,
+    "frames": 25,
+    "stitch": true,
+    "drop_first_frame": true,
+    "interpolate_to_fps": 60,
+    "upscale": 1.5,
+    "sharpen": 0.6,
+    "output_filename": "chained_final.mp4"
+  },
+  "jobs": [
+    {
+      "id": "demo_chain",
+      "initial_image": "/absolute/path/to/start_frame.png",
+      "segments": [
+        { "seed": 42 },
+        { "seed": 100 },
+        { "seed": 256 }
+      ]
+    }
+  ]
+}

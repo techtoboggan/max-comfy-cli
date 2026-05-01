@@ -1,0 +1,30 @@
+name: Release
+
+# Tag-driven release to PyPI. Configure trusted publishing on PyPI for this
+# repo (https://docs.pypi.org/trusted-publishers/) so no API token is needed.
+# Push a tag like `v0.2.0` to trigger.
+
+on:
+  push:
+    tags: ["v*"]
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write  # required for PyPI trusted publishing
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Build sdist + wheel
+        run: |
+          python -m pip install --upgrade build
+          python -m build
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
