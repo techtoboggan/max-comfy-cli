@@ -26,6 +26,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Graph-validation tests (`tests/test_graph_validation.py`, 12 cases)** —
   including round-trip checks that the example SDXL template + Python LoRA
   workflow render to structurally valid graphs.
+- **Selftest CLI tests (`tests/test_cli_selftest.py`, 6 cases)** — drive the
+  `max-comfy selftest` command via Click's `CliRunner` against the fake
+  ComfyUI fixture. Covers success, server-unreachable, missing-checkpoint,
+  auto-pick from `comfyui_path`, completion timeout, and validates the
+  smoke-test graph passes the static checker.
 
 ## [0.2.0] — 2026-05-02
 
