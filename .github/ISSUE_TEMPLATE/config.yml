@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Question / discussion
+    url: https://github.com/techtoboggan/max-comfy-cli/discussions
+    about: For usage questions, design discussions, or anything not clearly a bug or feature request.
