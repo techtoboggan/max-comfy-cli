@@ -39,6 +39,7 @@ from .workflows import (
     WorkflowRegistry,
     register,
     registry,
+    validate_graph,
 )
 
 __version__ = "0.2.0"
@@ -66,4 +67,5 @@ __all__ = [
     "media",
     "register",
     "registry",
+    "validate_graph",
 ]

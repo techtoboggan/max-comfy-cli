@@ -169,7 +169,17 @@ checks:
 * If `comfyui_path` is set, the install looks valid and `models/` exists.
 * What workflows are discoverable, including the three built-ins.
 
-Example:
+For an actual end-to-end check, run **`max-comfy selftest`** — it submits
+a tiny 1-step 64x64 graph against your real ComfyUI server and verifies
+the full round-trip (queue → sample → decode → save → download). If it
+passes, your install can talk to your ComfyUI install.
+
+```bash
+max-comfy selftest                                      # auto-picks a checkpoint
+max-comfy selftest --checkpoint sd_xl_base_1.0.safetensors
+```
+
+Example `doctor` output:
 
 ```
 $ max-comfy doctor
@@ -529,6 +539,7 @@ with Client(port=8188) as client:
 max-comfy init                          # write a starter max-comfy.toml
 max-comfy install-comfyui [--path ...]  # opt-in clone of ComfyUI to disk
 max-comfy doctor                        # check ffmpeg, ComfyUI, workflows
+max-comfy selftest                      # end-to-end smoke test against ComfyUI
 max-comfy models list [--category X]    # list installed checkpoints/loras/etc.
 
 # Workflow discovery + execution

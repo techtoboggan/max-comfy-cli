@@ -986,6 +986,136 @@ def models_list(
         click.echo()
 
 
+@cli.command("selftest")
+@click.option(
+    "--checkpoint",
+    help="Checkpoint name to use. Defaults to the first one found in <ComfyUI>/models/checkpoints/.",
+)
+@click.option(
+    "--steps",
+    type=int,
+    default=1,
+    show_default=True,
+    help="KSampler steps. Keep low — this is a smoke test.",
+)
+@click.option(
+    "--size",
+    type=int,
+    default=64,
+    show_default=True,
+    help="Square image size in pixels. Tiny by default for speed.",
+)
+@click.option(
+    "--timeout",
+    type=float,
+    default=300.0,
+    show_default=True,
+    help="Max seconds to wait for completion.",
+)
+@click.pass_obj
+def selftest(
+    cfg: Config,
+    checkpoint: str | None,
+    steps: int,
+    size: int,
+    timeout: float,
+) -> None:
+    """End-to-end smoke test against your real ComfyUI server.
+
+    Submits a tiny known-good SDXL/SD1.5-compatible txt2img graph (1 step,
+    64x64 by default) and verifies the round-trip works. If this passes,
+    your max-comfy install can talk to your ComfyUI install — the rest is
+    workflow-specific configuration.
+
+    Run it once after `max-comfy init` + `max-comfy doctor` to confirm
+    everything's wired up.
+    """
+    client = Client(host=cfg.comfyui_host, port=cfg.comfyui_port)
+    if not client.health_check():
+        raise click.ClickException(
+            f"ComfyUI not reachable at {cfg.comfyui_host}:{cfg.comfyui_port}. "
+            "Start it with `max-comfy server start` or run `cd <ComfyUI> && python main.py`."
+        )
+
+    if not checkpoint:
+        if cfg.comfyui_path:
+            ckpt_dir = Path(cfg.comfyui_path).expanduser() / "models" / "checkpoints"
+            if ckpt_dir.is_dir():
+                candidates = sorted(
+                    list(ckpt_dir.glob("*.safetensors")) + list(ckpt_dir.glob("*.ckpt"))
+                )
+                if candidates:
+                    checkpoint = candidates[0].name
+                    click.echo(f"Auto-selected checkpoint: {checkpoint}")
+        if not checkpoint:
+            raise click.ClickException(
+                "Pass --checkpoint <name>, or set comfyui_path in your config so I can pick one."
+            )
+
+    graph: dict[str, Any] = {
+        "1": {
+            "class_type": "CheckpointLoaderSimple",
+            "inputs": {"ckpt_name": checkpoint},
+        },
+        "2": {
+            "class_type": "CLIPTextEncode",
+            "inputs": {"text": "max-comfy selftest", "clip": ["1", 1]},
+        },
+        "3": {
+            "class_type": "CLIPTextEncode",
+            "inputs": {"text": "", "clip": ["1", 1]},
+        },
+        "4": {
+            "class_type": "EmptyLatentImage",
+            "inputs": {"width": size, "height": size, "batch_size": 1},
+        },
+        "5": {
+            "class_type": "KSampler",
+            "inputs": {
+                "seed": 0,
+                "steps": steps,
+                "cfg": 1.0,
+                "sampler_name": "euler",
+                "scheduler": "normal",
+                "denoise": 1.0,
+                "model": ["1", 0],
+                "positive": ["2", 0],
+                "negative": ["3", 0],
+                "latent_image": ["4", 0],
+            },
+        },
+        "6": {"class_type": "VAEDecode", "inputs": {"samples": ["5", 0], "vae": ["1", 2]}},
+        "7": {
+            "class_type": "SaveImage",
+            "inputs": {"images": ["6", 0], "filename_prefix": "max-comfy-selftest"},
+        },
+    }
+
+    # Static check first — if this fails, our own builder is broken, no point asking ComfyUI.
+    from .workflows import validate_graph as _validate_graph
+
+    issues = _validate_graph(graph)
+    if issues:
+        raise click.ClickException(
+            "Selftest graph failed static validation (this is a max-comfy bug):\n  - "
+            + "\n  - ".join(issues)
+        )
+
+    click.echo(f"Submitting smoke-test graph ({size}x{size}, {steps} step, ckpt={checkpoint})...")
+    try:
+        result = client.submit_and_wait(graph, timeout=timeout, poll_interval=cfg.poll_interval)
+    except MaxComfyError as exc:
+        click.echo(f"FAIL  {exc}", err=True)
+        sys.exit(1)
+
+    click.echo(f"OK    prompt {result.prompt_id} completed.")
+    click.echo(f"      {len(result.outputs)} output(s):")
+    for out in result.outputs:
+        click.echo(f"        {out.filename}  (node {out.node_id}, type={out.type})")
+    click.echo()
+    click.echo("ComfyUI integration verified. You're good to go.")
+
+
 @cli.command("install-comfyui")
 @click.option(
     "--path",

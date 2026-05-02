@@ -320,6 +320,87 @@ def _load_json_template(path: Path) -> TemplateWorkflow:
     )
 
 
+# ---------------------------------------------------------------------- #
+# Graph validation (static checks)
+# ---------------------------------------------------------------------- #
+def validate_graph(graph: dict[str, Any]) -> list[str]:
+    """Return a list of structural issues with a ComfyUI prompt graph.
+
+    Checks:
+
+    * Root must be a dict mapping node IDs to node objects.
+    * Every node has a ``class_type``.
+    * Every node's ``inputs`` is a dict.
+    * Every ``[node_id, slot]`` reference points to an existing node ID and
+      a non-negative integer slot.
+    * No unresolved ``{{var}}`` placeholders remain (a sign that template
+      rendering forgot a parameter or someone is validating a raw template).
+
+    Returns an empty list when the graph looks structurally valid. This is a
+    static check — it does NOT validate that the ``class_type`` strings exist
+    in your ComfyUI install or that input names match the node's signature.
+    For that, submit the graph to a running ComfyUI; ``Client.submit`` will
+    surface those errors.
+    """
+    issues: list[str] = []
+    if not isinstance(graph, dict):
+        return [f"Graph must be a dict, got {type(graph).__name__}"]
+    if not graph:
+        return ["Graph is empty"]
+
+    node_ids = set(graph.keys())
+    placeholder_re = templates._PLACEHOLDER_RE  # noqa: SLF001
+
+    def _walk(node_id: str, value: Any, path: str) -> None:
+        if isinstance(value, dict):
+            for k, v in value.items():
+                _walk(node_id, v, f"{path}.{k}")
+        elif isinstance(value, list):
+            # ComfyUI node references are exactly [str_id, int_slot].
+            if (
+                len(value) == 2
+                and isinstance(value[0], str)
+                and isinstance(value[1], (int, bool))
+                and not isinstance(value[1], bool)
+            ):
+                ref_id, slot = value
+                if ref_id not in node_ids:
+                    issues.append(
+                        f"Node {node_id!r} {path} references unknown node {ref_id!r}"
+                    )
+                if slot < 0:
+                    issues.append(
+                        f"Node {node_id!r} {path} has negative slot index {slot}"
+                    )
+            else:
+                for i, item in enumerate(value):
+                    _walk(node_id, item, f"{path}[{i}]")
+        elif isinstance(value, str) and placeholder_re.search(value):
+            issues.append(
+                f"Node {node_id!r} {path} still contains an unresolved placeholder: {value!r}"
+            )
+
+    for node_id, node in graph.items():
+        if not isinstance(node, dict):
+            issues.append(f"Node {node_id!r} must be an object, got {type(node).__name__}")
+            continue
+        if "class_type" not in node:
+            issues.append(f"Node {node_id!r} is missing 'class_type'")
+        elif not isinstance(node["class_type"], str) or not node["class_type"]:
+            issues.append(f"Node {node_id!r} 'class_type' must be a non-empty string")
+        inputs = node.get("inputs")
+        if inputs is None:
+            continue
+        if not isinstance(inputs, dict):
+            issues.append(
+                f"Node {node_id!r} 'inputs' must be an object, got {type(inputs).__name__}"
+            )
+            continue
+        _walk(node_id, inputs, "inputs")
+
+    return issues
+
+
 def _read_sidecar(path: Path) -> dict[str, Any]:
     if sys.version_info >= (3, 11):
         import tomllib

@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **`max-comfy selftest`** — submits a 1-step 64x64 txt2img graph against
+  your real ComfyUI install and verifies the full round-trip
+  (queue → execute → save → list outputs). Auto-picks a checkpoint from
+  `<ComfyUI>/models/checkpoints/` if `--checkpoint` is omitted.
+- **Static graph validator (`max_comfy.validate_graph`)** — catches dangling
+  node references, missing `class_type`, malformed `inputs`, negative slots,
+  and unrendered `{{var}}` placeholders. Run before submission to fail fast
+  on builder bugs.
+- **Fake ComfyUI HTTP server fixture (`tests/conftest.py`)** — pytest fixture
+  that spins up an in-process server mimicking ComfyUI's REST API. Used to
+  drive end-to-end Client tests over real HTTP without needing ComfyUI installed.
+- **End-to-end Client tests (`tests/test_client_e2e.py`, 16 cases)** — exercise
+  the actual wire format: submit/wait/history-poll, list_outputs unpacking,
+  download streaming, multipart upload, interrupt, free-memory.
+- **Graph-validation tests (`tests/test_graph_validation.py`, 12 cases)** —
+  including round-trip checks that the example SDXL template + Python LoRA
+  workflow render to structurally valid graphs.
+
 ## [0.2.0] — 2026-05-02
 
 First public release.
